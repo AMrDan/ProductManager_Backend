@@ -1,4 +1,4 @@
-class ProductManager {
+export default class ProductManager {
   #path;
   #db;
 
@@ -124,7 +124,7 @@ class ProductManager {
   }
 }
 
-class Product {
+export class Product {
 
   constructor(title, description, price, thumbnail, code, stock) {
     // this.id = products.length + 1;
