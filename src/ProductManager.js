@@ -1,4 +1,4 @@
-export default class ProductManager {
+class ProductManager {
   #path;
   #db;
 
@@ -6,17 +6,47 @@ export default class ProductManager {
   {
     this.#path = path;
     this.#db = new Persistence(this.#path);
+    // ---------------- Exemplo de Uso ----------------
+    const prod1 = new Product(
+      "Prod1", // title
+      "Descrição Prod 1", // description
+      10.0, // price
+      "caminho/thumb1.jpg", // thumbnail
+      "1", // code
+      1 // stock
+    );
+
+    const prod2 = new Product(
+      "Prod2", // title
+      "Descrição Prod 2", // description
+      20.0, // price
+      "caminho/thimb2.jpg", // thumbnail
+      "2", // code
+      2 // stock
+    );
+
+    const prod3 = new Product(
+      "Prod3", // title
+      "Descrição Prod 3", // description
+      30.0, // price
+      "caminho/thimb3.jpg", // thumbnail
+      "3", // code
+      3 // stock
+    );
+    this.addProduct(prod1);
+    this.addProduct(prod2);
+    this.addProduct(prod3);
   }
 
   addProduct(newProduct) {
     // Validate that all fields are filled in
-    if(this.isRequiredFieldEmpty(newProduct))
-      return;
+    if(this.isRequiredFieldEmpty(newProduct)) 
+    return;
 
-    // Check if "code" is unique 
-    if(this.isCodeDuplicated(newProduct))
-      return;
-    
+    // Check if "code" is unique
+    if(this.isCodeDuplicated(newProduct)) 
+    return;
+
     // Add the new product
     let productsArray = this.getProducts();
     const newId = this.createId(productsArray);
@@ -24,42 +54,42 @@ export default class ProductManager {
 
     productsArray.push(newProduct);
     productsArray = JSON.stringify(productsArray);
-    
+
     this.#db.write(productsArray);
     console.log(`Produto "${newProduct.title}" adicionado com sucesso!`);
   }
 
   getProducts(){
     let productsArray = this.#db.read();
-    if(productsArray.length === 0)
-      return [];
+    if(productsArray.length === 0) 
+    return [];
     return JSON.parse(productsArray);
   }
 
   getProductById(id) {
     const products = this.getProducts();
-    const result = products.find(product => product.id === id);
-    if(result)
-      return result;
+    const result = products.find((product) => product.id === id);
+    if(result) 
+    return result;
     console.log(`Produto com Id "${id}" não encontrado.`);
   }
 
   deleteProduct(id){
     let productsArray = this.getProducts();
     let product = this.getProductById(id);
-    
+
     if(product){
-      let remainingProducts = productsArray.filter(p => p.id !== id);
+      let remainingProducts = productsArray.filter((p) => p.id !== id);
       remainingProducts = JSON.stringify(remainingProducts);
       this.#db.write(remainingProducts);
-    
+
       console.log(`Produto "${product.title}" removido com sucesso!`);
     }
   }
 
   updateProduct(id, updatedProduct){
     let productsArray = this.getProducts();
-    const indexToUpdate = productsArray.findIndex(p => p.id === id);
+    const indexToUpdate = productsArray.findIndex((p) => p.id === id);
     if(indexToUpdate === -1){
       console.log(`Produto com Id "${id}" não encontrado.`);
       return;
@@ -73,8 +103,8 @@ export default class ProductManager {
 
     productsArray = JSON.stringify(productsArray);
     this.#db.write(productsArray);
-      
-    console.log(`Produto "${updatedProduct.title}" atualizado com sucesso!`);   
+
+    console.log(`Produto "${updatedProduct.title}" atualizado com sucesso!`);
   }
 
   // Check if "code" is unique
@@ -83,8 +113,10 @@ export default class ProductManager {
     let codeIsDuplicated = false;
 
     if(products){
-      codeIsDuplicated = products.find(existingProduct => existingProduct.code === newProduct.code);
-      
+      codeIsDuplicated = products.find(
+        (existingProduct) => existingProduct.code === newProduct.code
+      );
+
       if (codeIsDuplicated) {
         console.error(`Erro: O código "${newProduct.code}" já foi cadastrado.`);
       }
@@ -97,8 +129,8 @@ export default class ProductManager {
   isRequiredFieldEmpty(newProduct){
     for (const field in newProduct) {
       if (!newProduct[field]) {
-          console.error(`Erro: O campo "${field}" obrigatório.`);
-          return true;
+        console.error(`Erro: O campo "${field}" obrigatório.`);
+        return true;
       }
     }
 
@@ -108,24 +140,23 @@ export default class ProductManager {
   createId(products){
     let maxValue = Number.MIN_SAFE_INTEGER;
     try {
-      products.forEach(p => {
+      products.forEach((p) => {
         if(p.id > maxValue)
-          maxValue = p.id;
-      });        
-      
+        maxValue = p.id;
+      });
+
       if(maxValue == Number.MIN_SAFE_INTEGER){
-        maxValue = 0;  
+        maxValue = 0;
       }
     } catch (error) {
       maxValue = 0;
     }
-    
+
     return maxValue + 1;
   }
 }
 
-export class Product {
-
+class Product {
   constructor(title, description, price, thumbnail, code, stock) {
     // this.id = products.length + 1;
     this.title = title;
@@ -140,22 +171,24 @@ export class Product {
 class Persistence {
   #fs = '';
   #pathAndFileName = '';
-  
+
   constructor(path){
     this.#fs = require('fs');
-    
-    if(!path)
-      path = 'persistenceFile.json'
-    else
-      path += 'persistenceFile.json'
-    
+
     this.#pathAndFileName = path;
+
+    if (!this.#fs.existsSync(this.#pathAndFileName)) {
+      this.#fs.writeFileSync(this.#pathAndFileName, "[]");
+    }
   }
 
-  write(value){
-      this.#fs.writeFileSync(this.#pathAndFileName, value, (err) => {
-        if(err) return console.error(`Erro ao criar arquivo: ${err}`)
-      });
+  write(value) {
+    try {
+      this.#fs.writeFileSync(this.#pathAndFileName, value);
+      console.log("Dados salvos com sucesso!");
+    } catch (error) {
+      console.error(`Erro ao escrever no arquivo: ${error}`);
+    }
   }
 
   read(){
@@ -165,41 +198,12 @@ class Persistence {
         productsArray = Array.of(productsArray);
       }
       return productsArray;
-    } 
+    }
     return [];
   }
 }
 
-module.exports(ProductManager, Product);
-
-// ---------------- Exemplo de Uso ----------------
-const prod1 = new Product(
-  "Prod1", // title
-  "Descrição Prod 1", // description
-  10.00, // price
-  "caminho/thumb1.jpg", // thumbnail
-  "1", // code
-  1 // stock
-);
-
-const prod2 = new Product(
-  "Prod2", // title
-  "Descrição Prod 2", // description
-  20.00, // price
-  "caminho/thimb2.jpg", // thumbnail
-  "2", // code
-  2 // stock
-)
-
-const prod3 = new Product(
-  "Prod3", // title
-  "Descrição Prod 3", // description
-  30.00, // price
-  "caminho/thimb3.jpg", // thumbnail
-  "3", // code
-  3 // stock
-)
-
+module.exports = { ProductManager, Product };
 // const pManager = new ProductManager();
 // pManager.addProduct(prod1);
 // pManager.addProduct(prod2);
