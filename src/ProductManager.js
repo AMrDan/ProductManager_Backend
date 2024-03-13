@@ -170,6 +170,8 @@ class Persistence {
   }
 }
 
+module.exports(ProductManager, Product);
+
 // ---------------- Exemplo de Uso ----------------
 const prod1 = new Product(
   "Prod1", // title
