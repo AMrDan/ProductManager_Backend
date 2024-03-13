@@ -1,0 +1,27 @@
+{
+  "name": "productmanager_backend",
+  "version": "1.0.0",
+  "description": "Product Manager API",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "nodemon"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AMrDan/ProductManager_Backend.git"
+  },
+  "keywords": [
+    "Nodemon",
+    "ExpressJS"
+  ],
+  "author": "Daniel Adamis",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AMrDan/ProductManager_Backend/issues"
+  },
+  "homepage": "https://github.com/AMrDan/ProductManager_Backend#readme",
+  "dependencies": {
+    "express": "^4.18.3",
+    "nodemon": "^3.1.0"
+  }
+}
