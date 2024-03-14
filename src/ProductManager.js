@@ -39,7 +39,7 @@ class ProductManager {
     // ---------------- End of: JIC you need to add products ----------------
   }
 
-  addProduct(newProduct) {
+  async addProduct(newProduct) {
     // Validate that all fields are filled in
     if(this.isRequiredFieldEmpty(newProduct)) 
       return;
@@ -49,47 +49,47 @@ class ProductManager {
       return;
 
     // Add the new product
-    let productsArray = this.getProducts();
+    let productsArray = await this.getProducts();
     const newId = this.createId(productsArray);
     newProduct.id = newId;
 
     productsArray.push(newProduct);
     productsArray = JSON.stringify(productsArray);
 
-    this.#db.write(productsArray);
+    await this.#db.write(productsArray);
     console.log(`Produto "${newProduct.title}" adicionado com sucesso!`);
   }
 
-  getProducts(){
-    let productsArray = this.#db.read();
+  async getProducts(){
+    let productsArray = await this.#db.read();
     if(productsArray.length === 0) 
       return [];
     return JSON.parse(productsArray);
   }
 
-  getProductById(id) {
-    const products = this.getProducts();
+  async getProductById(id) {
+    const products = await this.getProducts();
     const result = products.find((product) => product.id === id);
     if(result) 
       return result;
-    console.log(`Produto com Id "${id}" não encontrado.`);
+    return `Produto com Id "${id}" não encontrado.`;
   }
 
-  deleteProduct(id){
-    let productsArray = this.getProducts();
-    let product = this.getProductById(id);
+  async deleteProduct(id){
+    let productsArray = await this.getProducts();
+    let product = await this.getProductById(id);
 
     if(product){
       let remainingProducts = productsArray.filter((p) => p.id !== id);
       remainingProducts = JSON.stringify(remainingProducts);
-      this.#db.write(remainingProducts);
+      await this.#db.write(remainingProducts);
 
       console.log(`Produto "${product.title}" removido com sucesso!`);
     }
   }
 
-  updateProduct(id, updatedProduct){
-    let productsArray = this.getProducts();
+  async updateProduct(id, updatedProduct){
+    let productsArray = await this.getProducts();
     const indexToUpdate = productsArray.findIndex((p) => p.id === id);
     if(indexToUpdate === -1){
       console.log(`Produto com Id "${id}" não encontrado.`);
@@ -103,14 +103,14 @@ class ProductManager {
     productsArray[indexToUpdate].stock = updatedProduct.stock;
 
     productsArray = JSON.stringify(productsArray);
-    this.#db.write(productsArray);
+    await this.#db.write(productsArray);
 
     console.log(`Produto "${updatedProduct.title}" atualizado com sucesso!`);
   }
 
   // Check if "code" is unique
-  isCodeDuplicated(newProduct){
-    let products = this.getProducts();
+  async isCodeDuplicated(newProduct){
+    let products = await this.getProducts();
     let codeIsDuplicated = false;
 
     if(products){
@@ -177,23 +177,21 @@ class Persistence {
     this.#fs = require('fs');
 
     this.#pathAndFileName = path;
-
-    if (!this.#fs.existsSync(this.#pathAndFileName)) {
-      this.#fs.writeFileSync(this.#pathAndFileName, "[]");
-    }
   }
 
-  write(value) {
+  async write(value) {
     try {
-      this.#fs.writeFileSync(this.#pathAndFileName, value);
-      // console.log("Dados salvos com sucesso!");
+      if (!(await this.#fs.promises.exists(this.#pathAndFileName))) {
+        await this.#fs.promises.writeFile(this.#pathAndFileName, "[]");
+      }
+      await this.#fs.promises.writeFile(this.#pathAndFileName, value);
     } catch (error) {
       console.error(`Erro ao escrever no arquivo: ${error}`);
     }
   }
 
-  read(){
-    let productsArray = this.#fs.readFileSync(this.#pathAndFileName, 'utf-8');
+  async read(){
+    let productsArray = await this.#fs.promises.readFile(this.#pathAndFileName, 'utf-8');
     if(productsArray){
       if(!Array.isArray(productsArray)){
         productsArray = Array.of(productsArray);
