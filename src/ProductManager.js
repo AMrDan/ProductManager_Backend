@@ -6,46 +6,47 @@ class ProductManager {
   {
     this.#path = path;
     this.#db = new Persistence(this.#path);
-    // ---------------- Exemplo de Uso ----------------
-    const prod1 = new Product(
-      "Prod1", // title
-      "Descrição Prod 1", // description
-      10.0, // price
-      "caminho/thumb1.jpg", // thumbnail
-      "1", // code
-      1 // stock
-    );
+    // ----------------  JIC you need to add products ----------------
+    // const prod1 = new Product(
+    //   "Prod1", // title
+    //   "Descrição Prod 1", // description
+    //   10.0, // price
+    //   "caminho/thumb1.jpg", // thumbnail
+    //   "1", // code
+    //   1 // stock
+    // );
 
-    const prod2 = new Product(
-      "Prod2", // title
-      "Descrição Prod 2", // description
-      20.0, // price
-      "caminho/thimb2.jpg", // thumbnail
-      "2", // code
-      2 // stock
-    );
+    // const prod2 = new Product(
+    //   "Prod2", // title
+    //   "Descrição Prod 2", // description
+    //   20.0, // price
+    //   "caminho/thimb2.jpg", // thumbnail
+    //   "2", // code
+    //   2 // stock
+    // );
 
-    const prod3 = new Product(
-      "Prod3", // title
-      "Descrição Prod 3", // description
-      30.0, // price
-      "caminho/thimb3.jpg", // thumbnail
-      "3", // code
-      3 // stock
-    );
-    this.addProduct(prod1);
-    this.addProduct(prod2);
-    this.addProduct(prod3);
+    // const prod3 = new Product(
+    //   "Prod3", // title
+    //   "Descrição Prod 3", // description
+    //   30.0, // price
+    //   "caminho/thimb3.jpg", // thumbnail
+    //   "3", // code
+    //   3 // stock
+    // );
+    // this.addProduct(prod1);
+    // this.addProduct(prod2);
+    // this.addProduct(prod3);
+    // ---------------- End of: JIC you need to add products ----------------
   }
 
   addProduct(newProduct) {
     // Validate that all fields are filled in
     if(this.isRequiredFieldEmpty(newProduct)) 
-    return;
+      return;
 
     // Check if "code" is unique
     if(this.isCodeDuplicated(newProduct)) 
-    return;
+      return;
 
     // Add the new product
     let productsArray = this.getProducts();
@@ -62,7 +63,7 @@ class ProductManager {
   getProducts(){
     let productsArray = this.#db.read();
     if(productsArray.length === 0) 
-    return [];
+      return [];
     return JSON.parse(productsArray);
   }
 
@@ -70,7 +71,7 @@ class ProductManager {
     const products = this.getProducts();
     const result = products.find((product) => product.id === id);
     if(result) 
-    return result;
+      return result;
     console.log(`Produto com Id "${id}" não encontrado.`);
   }
 
@@ -185,7 +186,7 @@ class Persistence {
   write(value) {
     try {
       this.#fs.writeFileSync(this.#pathAndFileName, value);
-      console.log("Dados salvos com sucesso!");
+      // console.log("Dados salvos com sucesso!");
     } catch (error) {
       console.error(`Erro ao escrever no arquivo: ${error}`);
     }
@@ -204,20 +205,3 @@ class Persistence {
 }
 
 module.exports = { ProductManager, Product };
-// const pManager = new ProductManager();
-// pManager.addProduct(prod1);
-// pManager.addProduct(prod2);
-// pManager.addProduct(prod3);
-
-// pManager.deleteProduct(1);
-// pManager.deleteProduct(2);
-
-// const prod3new = new Product(
-//   "Prod3new", // title
-//   "Descrição Prod 3 New", // description
-//   35.00, // price
-//   "caminho/thimb3new.jpg", // thumbnail
-//   "3", // code
-//   3 // stock
-// )
-// pManager.updateProduct(3, prod3new);

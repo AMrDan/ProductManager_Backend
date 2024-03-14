@@ -1,21 +1,24 @@
-// const express = import('express');
-// const app = express();
+const express = require('express');
+const app = express();
 
 const { ProductManager, Product } = require('./ProductManager');
 
-// Caminho para o arquivo de persistência
-const pathToFile = './../src/persistenceFile.json';
-
-// Cria uma instância de ProductManager
+// Persistency file path
+const pathToFile = 'C:/Backend/ProductManager_Backend/src/persistenceFile.json';
 const pManager = new ProductManager(pathToFile);
 
-// Exibe os produtos
-console.log(pManager.getProducts());
+app.get('/products', (req, res) => {
+    const limit = Number(req.query.limit);
+    const products = pManager.getProducts().slice(0, limit);
+    res.send(products);
+});
 
-// Deleta um produto (você precisa passar o id do produto que deseja deletar)
-pManager.deleteProduct(1); // Deleta o produto com id 1
+app.get('/products/:pid', (req, res) => {
+    const pid = Number(req.params.pid);
+    const product = pManager.getProductById(pid);
+    res.send(product);
+});
 
-// Atualiza um produto (você precisa passar o id do produto que deseja atualizar e o novo objeto do produto)
-const updatedProduct = new Product("Prod2 Novo", "Descrição Prod 2 Novo", 40.00, "caminho/thimb2Novo.jpg", "2", 3);
-pManager.updateProduct(2, updatedProduct); // Atualiza o produto com id 2
-
+app.listen(8080, () => {
+    console.log(`Express Server running on port 8080`);
+});
