@@ -8,9 +8,13 @@ const pathToFile = 'C:/Backend/ProductManager_Backend/src/persistenceFile.json';
 const pManager = new ProductManager(pathToFile);
 
 app.get('/products', async (req, res) => {
-    const limit = Number(req.query.limit);
     let products = await pManager.getProducts();
-    products = products.slice(0, limit);
+
+    let limit = req.query.limit;
+    if(limit){
+        products = products.slice(0, Number(limit));
+    }
+    
     res.send(products);
 });
 

@@ -72,7 +72,7 @@ class ProductManager {
     const result = products.find((product) => product.id === id);
     if(result) 
       return result;
-    console.log(`Produto com Id "${id}" não encontrado.`);
+    return `Produto com Id "${id}" não encontrado.`;
   }
 
   async deleteProduct(id){
