@@ -7,15 +7,16 @@ const { ProductManager, Product } = require('./ProductManager');
 const pathToFile = 'C:/Backend/ProductManager_Backend/src/persistenceFile.json';
 const pManager = new ProductManager(pathToFile);
 
-app.get('/products', (req, res) => {
+app.get('/products', async (req, res) => {
     const limit = Number(req.query.limit);
-    const products = pManager.getProducts().slice(0, limit);
+    let products = await pManager.getProducts();
+    products = products.slice(0, limit);
     res.send(products);
 });
 
-app.get('/products/:pid', (req, res) => {
+app.get('/products/:pid', async (req, res) => {
     const pid = Number(req.params.pid);
-    const product = pManager.getProductById(pid);
+    const product = await pManager.getProductById(pid);
     res.send(product);
 });
 
