@@ -6,39 +6,9 @@ export class ProductManager {
 
   constructor(path)
   {
+    path = 'C:/Backend/ProductManager_Backend/src/produtos.json';
     this.#path = path;
     this.#db = new Persistence(this.#path);
-    // ----------------  JIC you need to add products ----------------
-    // const prod1 = new Product(
-    //   "Prod1", // title
-    //   "Descrição Prod 1", // description
-    //   10.0, // price
-    //   "caminho/thumb1.jpg", // thumbnail
-    //   "1", // code
-    //   1 // stock
-    // );
-
-    // const prod2 = new Product(
-    //   "Prod2", // title
-    //   "Descrição Prod 2", // description
-    //   20.0, // price
-    //   "caminho/thimb2.jpg", // thumbnail
-    //   "2", // code
-    //   2 // stock
-    // );
-
-    // const prod3 = new Product(
-    //   "Prod3", // title
-    //   "Descrição Prod 3", // description
-    //   30.0, // price
-    //   "caminho/thimb3.jpg", // thumbnail
-    //   "3", // code
-    //   3 // stock
-    // );
-    // this.addProduct(prod1);
-    // this.addProduct(prod2);
-    // this.addProduct(prod3);
-    // ---------------- End of: JIC you need to add products ----------------
   }
 
   async addProduct(newProduct) {
@@ -47,7 +17,7 @@ export class ProductManager {
       return;
 
     // Check if "code" is unique
-    if(this.isCodeDuplicated(newProduct)) 
+    if(await this.isCodeDuplicated(newProduct))
       return;
 
     // Add the new product
@@ -99,10 +69,12 @@ export class ProductManager {
     }
     productsArray[indexToUpdate].title = updatedProduct.title;
     productsArray[indexToUpdate].description = updatedProduct.description;
-    productsArray[indexToUpdate].price = updatedProduct.price;
-    productsArray[indexToUpdate].thumbnail = updatedProduct.thumbnail;
     productsArray[indexToUpdate].code = updatedProduct.code;
+    productsArray[indexToUpdate].price = updatedProduct.price;
+    productsArray[indexToUpdate].status = updatedProduct.status;
     productsArray[indexToUpdate].stock = updatedProduct.stock;
+    productsArray[indexToUpdate].category = updatedProduct.category;
+    productsArray[indexToUpdate].thumbnails = updatedProduct.thumbnails;
 
     productsArray = JSON.stringify(productsArray);
     await this.#db.write(productsArray);
@@ -131,7 +103,7 @@ export class ProductManager {
   // Validate that all fields are filled in
   isRequiredFieldEmpty(newProduct){
     for (const field in newProduct) {
-      if (!newProduct[field]) {
+      if (!newProduct[field] && field !== 'thumbnails' ) {
         console.error(`Erro: O campo "${field}" obrigatório.`);
         return true;
       }
@@ -160,14 +132,15 @@ export class ProductManager {
 }
 
 export class Product {
-  constructor(title, description, price, thumbnail, code, stock) {
-    // this.id = products.length + 1;
+  constructor(title, description,  code, price, status = true, stock, category, thumbnails) {
     this.title = title;
     this.description = description;
-    this.price = price;
-    this.thumbnail = thumbnail;
     this.code = code;
+    this.price = price;
+    this.status = status;
     this.stock = stock;
+    this.category = category;
+    this.thumbnails = thumbnails;
   }
 }
 
@@ -182,7 +155,12 @@ class Persistence {
 
   async write(value) {
     try {
-      if (!(await this.#fs.promises.exists(this.#pathAndFileName))) {
+      // const F_OK = this.#fs.promises.constants.F_OK;
+      // const fileExists = await this.#fs.promises.access(this.#pathAndFileName, F_OK);
+      // console.warn("test: "+fileExists);
+      const fileExists = this.#fs.existsSync(this.#pathAndFileName);
+
+      if (!fileExists) {
         await this.#fs.promises.writeFile(this.#pathAndFileName, "[]");
       }
       await this.#fs.promises.writeFile(this.#pathAndFileName, value);

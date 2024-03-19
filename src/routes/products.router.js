@@ -24,4 +24,9 @@ router.get('/:pid', async (req, res) => {
     res.send(product);
 });
 
+// router.post('', async (req, res)) => {
+    
+
+// }
+
 export default router;
