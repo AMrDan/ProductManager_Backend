@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Product Manager API",
   "main": "src/app.js",
+  "type": "module",
   "scripts": {
     "test": "nodemon"
   },

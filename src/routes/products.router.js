@@ -1,14 +1,13 @@
 import {Router} from 'express';
+import { ProductManager } from './../ProductManager.js';
 
 const router = Router();
 
-const { ProductManager, Product } = require('./ProductManager');
-
 // Persistency file path
-const pathToFile = 'C:/Backend/ProductManager_Backend/src/produtos.json';
-const pManager = new ProductManager(pathToFile);
+const productsFilePath = 'C:/Backend/ProductManager_Backend/src/produtos.json';
+const pManager = new ProductManager(productsFilePath);
 
-router.get('/products', async (req, res) => {
+router.get('/', async (req, res) => {
     let products = await pManager.getProducts();
 
     let limit = req.query.limit;
@@ -19,9 +18,10 @@ router.get('/products', async (req, res) => {
     res.send(products);
 });
 
-router.get('/products/:pid', async (req, res) => {
+router.get('/:pid', async (req, res) => {
     const pid = Number(req.params.pid);
     const product = await pManager.getProductById(pid);
     res.send(product);
 });
+
 export default router;

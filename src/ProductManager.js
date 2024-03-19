@@ -1,4 +1,6 @@
-class ProductManager {
+import fs from 'fs'
+
+export class ProductManager {
   #path;
   #db;
 
@@ -157,7 +159,7 @@ class ProductManager {
   }
 }
 
-class Product {
+export class Product {
   constructor(title, description, price, thumbnail, code, stock) {
     // this.id = products.length + 1;
     this.title = title;
@@ -174,8 +176,7 @@ class Persistence {
   #pathAndFileName = '';
 
   constructor(path){
-    this.#fs = require('fs');
-
+    this.#fs = fs;
     this.#pathAndFileName = path;
   }
 
@@ -201,5 +202,3 @@ class Persistence {
     return [];
   }
 }
-
-module.exports = { ProductManager, Product };
