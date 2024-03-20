@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import { ProductManager } from './../ProductManager.js';
 
 const router = Router();
@@ -16,17 +16,19 @@ router.get('/', async (req, res) => {
     }
     
     res.send(products);
+    
 });
 
 router.get('/:pid', async (req, res) => {
     const pid = Number(req.params.pid);
     const product = await pManager.getProductById(pid);
+    
     res.send(product);
 });
 
-// router.post('', async (req, res)) => {
-    
-
-// }
+router.post('/', async (req, res) => {
+    const teste = req.body;
+    res.send(JSON.stringify(teste));
+});
 
 export default router;

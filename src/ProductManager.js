@@ -17,8 +17,8 @@ export class ProductManager {
       return;
 
     // Check if "code" is unique
-    if(await this.isCodeDuplicated(newProduct))
-      return;
+    // if(await this.isCodeDuplicated(newProduct))
+    //   return;
 
     // Add the new product
     let productsArray = await this.getProducts();
@@ -155,10 +155,11 @@ class Persistence {
 
   async write(value) {
     try {
-      // const F_OK = this.#fs.promises.constants.F_OK;
-      // const fileExists = await this.#fs.promises.access(this.#pathAndFileName, F_OK);
+      let fileExists;
+      const F_OK = fs.promises.constants.F_OK;
+      // fileExists  = await fs.promises.access(this.#pathAndFileName, F_OK);
       // console.warn("test: "+fileExists);
-      const fileExists = this.#fs.existsSync(this.#pathAndFileName);
+      fileExists = this.#fs.existsSync(this.#pathAndFileName);
 
       if (!fileExists) {
         await this.#fs.promises.writeFile(this.#pathAndFileName, "[]");
