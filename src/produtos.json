@@ -2,37 +2,28 @@
     {
         "title": "Prod1",
         "description": "Descrição Prod 1",
-        "code": "1",
         "price": 10,
-        "status": true,
+        "thumbnail": "caminho/thumb1.jpg",
+        "code": "1",
         "stock": 1,
-        "category": "Categoria 1",
-        "thumbnails": [
-            "caminho/thumb1.jpg"
-        ],
         "id": 1
     },
     {
         "title": "Prod2",
         "description": "Descrição Prod 2",
-        "code": "2",
         "price": 20,
-        "status": true,
+        "thumbnail": "caminho/thimb2.jpg",
+        "code": "2",
         "stock": 2,
-        "category": "Categoria 2",
-        "thumbnails": [
-            "caminho/thimb2.jpg"
-        ],
         "id": 2
     },
     {
         "title": "Prod3",
         "description": "Descrição Prod 3",
-        "code": "3",
         "price": 30,
-        "status": true,
+        "thumbnail": "caminho/thimb3.jpg",
+        "code": "3",
         "stock": 3,
-        "category": "Categoria 3",
         "id": 3
     }
 ]

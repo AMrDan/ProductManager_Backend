@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs, { stat } from 'fs'
 
 export class ProductManager {
   #path;
@@ -12,13 +12,17 @@ export class ProductManager {
   }
 
   async addProduct(newProduct) {
+    let status = false;
+    let message = '';
     // Validate that all fields are filled in
-    if(this.isRequiredFieldEmpty(newProduct)) 
-      return;
+    let isRequiredFieldEmpty = this.isRequiredFieldEmpty(newProduct);
+    if(isRequiredFieldEmpty.status) 
+      return isRequiredFieldEmpty;
 
     // Check if "code" is unique
-    // if(await this.isCodeDuplicated(newProduct))
-    //   return;
+    const isCodeDuplicated = await this.isCodeDuplicated(newProduct);
+    if(isCodeDuplicated.status)
+      return isCodeDuplicated;
 
     // Add the new product
     let productsArray = await this.getProducts();
@@ -28,8 +32,13 @@ export class ProductManager {
     productsArray.push(newProduct);
     productsArray = JSON.stringify(productsArray);
 
-    await this.#db.write(productsArray);
-    console.log(`Produto "${newProduct.title}" adicionado com sucesso!`);
+    const response = await this.#db.write(productsArray);
+    if(response.status){
+      message = `Produto "${newProduct.title}" adicionado com sucesso!`;
+    }else{
+      message = `Erro ao inserir o Produto "${newProduct.title}". Erro: ${response.message}`;
+    }
+    return {status: response.status, message: message};
   }
 
   async getProducts(){
@@ -40,33 +49,55 @@ export class ProductManager {
   }
 
   async getProductById(id) {
+    let status = false;
+    let message = '';
+
     const products = await this.getProducts();
     const result = products.find((product) => product.id === id);
-    if(result) 
-      return result;
-    return `Produto com Id "${id}" não encontrado.`;
+    if(result){
+      status = true;
+      message = result;
+    }else{
+      status = false;
+      message = `Produto com Id "${id}" não encontrado.`;
+    }
+
+    return {status: status, message: message};
   }
 
   async deleteProduct(id){
+    let message = '';
+    
     let productsArray = await this.getProducts();
-    let product = await this.getProductById(id);
+    let responseProduct = await this.getProductById(id);
 
-    if(product){
+    if(responseProduct.status){
+      const productTitle = responseProduct.message.title;
+
       let remainingProducts = productsArray.filter((p) => p.id !== id);
       remainingProducts = JSON.stringify(remainingProducts);
-      await this.#db.write(remainingProducts);
+      
+      const responseDB = await this.#db.write(remainingProducts);
+      if(responseDB.status){
+        message = `Produto "${productTitle}" removido com sucesso!`;
+      }else{
+        message = `Erro ao remover produto. Erro: ${responseDB.message}`;
+      }
 
-      console.log(`Produto "${product.title}" removido com sucesso!`);
+      return {status: responseDB.status, message: message};
     }
   }
 
   async updateProduct(id, updatedProduct){
+    let message = '';
+    
     let productsArray = await this.getProducts();
     const indexToUpdate = productsArray.findIndex((p) => p.id === id);
     if(indexToUpdate === -1){
-      console.log(`Produto com Id "${id}" não encontrado.`);
-      return;
+      message = `Produto com Id "${id}" não encontrado.`;
+      return {status: false, message: message};
     }
+
     productsArray[indexToUpdate].title = updatedProduct.title;
     productsArray[indexToUpdate].description = updatedProduct.description;
     productsArray[indexToUpdate].code = updatedProduct.code;
@@ -77,15 +108,22 @@ export class ProductManager {
     productsArray[indexToUpdate].thumbnails = updatedProduct.thumbnails;
 
     productsArray = JSON.stringify(productsArray);
-    await this.#db.write(productsArray);
+    const response = await this.#db.write(productsArray);
 
-    console.log(`Produto "${updatedProduct.title}" atualizado com sucesso!`);
+    if(response.status){
+      message = `Produto "${updatedProduct.title}" atualizado com sucesso!`;
+    }else{
+      message = `Erro ao atualizar o produto "${updatedProduct.title}". Erro: ${response.message}`;
+    }
+    
+    return {status: response.status, message: message};
   }
 
   // Check if "code" is unique
   async isCodeDuplicated(newProduct){
     let products = await this.getProducts();
     let codeIsDuplicated = false;
+    let message = '';
 
     if(products){
       codeIsDuplicated = products.find(
@@ -93,23 +131,26 @@ export class ProductManager {
       );
 
       if (codeIsDuplicated) {
-        console.error(`Erro: O código "${newProduct.code}" já foi cadastrado.`);
+        message = `Erro: O código "${newProduct.code}" já foi cadastrado.`;
       }
     }
 
-    return codeIsDuplicated;
+    return {status: !!codeIsDuplicated, message: message}
   }
 
   // Validate that all fields are filled in
   isRequiredFieldEmpty(newProduct){
-    for (const field in newProduct) {
-      if (!newProduct[field] && field !== 'thumbnails' ) {
-        console.error(`Erro: O campo "${field}" obrigatório.`);
-        return true;
+    let status = false;
+    let message = '';
+    let emptyProduct = new Product();
+    for (const field in emptyProduct) {
+      if (!newProduct[field] && field !== 'thumbnails') {
+        status = true;
+        message = `Erro: O campo "${field}" é obrigatório.`;
+        break;
       }
     }
-
-    return false;
+    return {status: status, message: message};
   }
 
   createId(products){
@@ -132,7 +173,7 @@ export class ProductManager {
 }
 
 export class Product {
-  constructor(title, description,  code, price, status = true, stock, category, thumbnails) {
+  constructor(title, description, code, price, status = true, stock, category, thumbnails = []) {
     this.title = title;
     this.description = description;
     this.code = code;
@@ -154,6 +195,8 @@ class Persistence {
   }
 
   async write(value) {
+    let status = false;
+    let message = '';
     try {
       let fileExists;
       const F_OK = fs.promises.constants.F_OK;
@@ -165,9 +208,12 @@ class Persistence {
         await this.#fs.promises.writeFile(this.#pathAndFileName, "[]");
       }
       await this.#fs.promises.writeFile(this.#pathAndFileName, value);
+      
+      status = true;
     } catch (error) {
-      console.error(`Erro ao escrever no arquivo: ${error}`);
+      message = error;
     }
+    return {status: status, message: message};
   }
 
   async read(){

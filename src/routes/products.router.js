@@ -14,21 +14,30 @@ router.get('/', async (req, res) => {
     if(limit){
         products = products.slice(0, Number(limit));
     }
-    
     res.send(products);
-    
 });
 
 router.get('/:pid', async (req, res) => {
     const pid = Number(req.params.pid);
-    const product = await pManager.getProductById(pid);
-    
-    res.send(product);
+    const response = await pManager.getProductById(pid);
+    res.send(response.message);
 });
 
 router.post('/', async (req, res) => {
-    const teste = req.body;
-    res.send(JSON.stringify(teste));
+    const response = await pManager.addProduct(req.body);
+    res.send(response.message);
+});
+
+router.put('/:pid', async (req, res) => {
+    const pid = Number(req.params.pid);
+    const response = await pManager.updateProduct(pid, req.body);
+    res.send(response.message);
+});
+
+router.delete('/:pid', async (req, res) => {
+    const pid = Number(req.params.pid);
+    const response = await pManager.deleteProduct(pid);
+    res.send(response.message);
 });
 
 export default router;
