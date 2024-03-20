@@ -1,4 +1,4 @@
-import fs, { stat } from 'fs'
+import Persistence from '../Utils/Persistence.js'
 
 export class ProductManager {
   #path;
@@ -6,7 +6,6 @@ export class ProductManager {
 
   constructor(path)
   {
-    path = 'C:/Backend/ProductManager_Backend/src/produtos.json';
     this.#path = path;
     this.#db = new Persistence(this.#path);
   }
@@ -185,45 +184,45 @@ export class Product {
   }
 }
 
-class Persistence {
-  #fs = '';
-  #pathAndFileName = '';
+// class Persistence {
+//   #fs = '';
+//   #pathAndFileName = '';
 
-  constructor(path){
-    this.#fs = fs;
-    this.#pathAndFileName = path;
-  }
+//   constructor(path){
+//     this.#fs = fs;
+//     this.#pathAndFileName = path;
+//   }
 
-  async write(value) {
-    let status = false;
-    let message = '';
-    try {
-      let fileExists;
-      const F_OK = fs.promises.constants.F_OK;
-      // fileExists  = await fs.promises.access(this.#pathAndFileName, F_OK);
-      // console.warn("test: "+fileExists);
-      fileExists = this.#fs.existsSync(this.#pathAndFileName);
+//   async write(value) {
+//     let status = false;
+//     let message = '';
+//     try {
+//       let fileExists;
+//       const F_OK = fs.promises.constants.F_OK;
+//       // fileExists  = await fs.promises.access(this.#pathAndFileName, F_OK);
+//       // console.warn("test: "+fileExists);
+//       fileExists = this.#fs.existsSync(this.#pathAndFileName);
 
-      if (!fileExists) {
-        await this.#fs.promises.writeFile(this.#pathAndFileName, "[]");
-      }
-      await this.#fs.promises.writeFile(this.#pathAndFileName, value);
+//       if (!fileExists) {
+//         await this.#fs.promises.writeFile(this.#pathAndFileName, "[]");
+//       }
+//       await this.#fs.promises.writeFile(this.#pathAndFileName, value);
       
-      status = true;
-    } catch (error) {
-      message = error;
-    }
-    return {status: status, message: message};
-  }
+//       status = true;
+//     } catch (error) {
+//       message = error;
+//     }
+//     return {status: status, message: message};
+//   }
 
-  async read(){
-    let productsArray = await this.#fs.promises.readFile(this.#pathAndFileName, 'utf-8');
-    if(productsArray){
-      if(!Array.isArray(productsArray)){
-        productsArray = Array.of(productsArray);
-      }
-      return productsArray;
-    }
-    return [];
-  }
-}
+//   async read(){
+//     let productsArray = await this.#fs.promises.readFile(this.#pathAndFileName, 'utf-8');
+//     if(productsArray){
+//       if(!Array.isArray(productsArray)){
+//         productsArray = Array.of(productsArray);
+//       }
+//       return productsArray;
+//     }
+//     return [];
+//   }
+// }
