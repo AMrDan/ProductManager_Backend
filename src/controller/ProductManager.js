@@ -11,7 +11,6 @@ export class ProductManager {
   }
 
   async addProduct(newProduct) {
-    let status = false;
     let message = '';
     // Validate that all fields are filled in
     let isRequiredFieldEmpty = this.isRequiredFieldEmpty(newProduct);

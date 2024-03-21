@@ -1,27 +1,20 @@
 import Persistence from '../Utils/Persistence.js'
+import { ProductManager } from './ProductManager.js';
 
 export class CartManager {
   #path;
   #db;
+  #pManager;
 
   constructor(path)
   {
     this.#path = path;
     this.#db = new Persistence(this.#path);
+    this.#pManager = new ProductManager(this.#path);
   }
 
   async addCart(newCart) {
-    let status = false;
     let message = '';
-    // Validate that all fields are filled in
-    let isRequiredFieldEmpty = this.isRequiredFieldEmpty(newCart);
-    if(isRequiredFieldEmpty.status) 
-      return isRequiredFieldEmpty;
-
-    // Check if "code" is unique
-    const isCodeDuplicated = await this.isCodeDuplicated(newCart);
-    if(isCodeDuplicated.status)
-      return isCodeDuplicated;
 
     // Add the new product
     let cartsArray = await this.getCarts();
@@ -36,6 +29,50 @@ export class CartManager {
       message = `Carrinho de ID "${newCart.id}" criado com sucesso!`;
     }else{
       message = `Erro ao criar o carrinho de ID "${newCart.id}". Erro: ${response.message}`;
+    }
+    return {status: response.status, message: message};
+  }
+
+  async addProductToCart(cartId, productId) {
+    let message = '';
+
+    // Check if cart exists
+    let cartExists = await this.getCartById(cartId);
+    if(!cartExists.status){
+      return cartExists; // Return object with status and message with error.
+    }
+
+    // Check if product exists
+    let productExists = await this.#pManager.getProductById(productId);
+    if(!productExists.status){
+      return productExists; // Return object with status and message with error.
+    }
+
+    let cartsArray = await this.getCarts();
+    for(let cart of cartsArray){
+      if(cart.id === cartId){
+        const productExists = cart.products.find(p => p.productId === productId);
+        if(productExists){
+          cart.products.forEach((p) => {
+            if(p.productId === productId){
+              p.quantidade++;
+            }
+          });
+        }else{
+          const newProduct = new CartProduct(productId, 1);
+          cart.products.push(newProduct);
+        }
+        break;  
+      }
+    }
+
+    cartsArray = JSON.stringify(cartsArray);
+
+    const response = await this.#db.write(cartsArray);
+    if(response.status){
+      message = `Produto de ID "${productId}" adicionado ao carrinho de ID "${cartId}" com sucesso!`;
+    }else{
+      message = `Erro ao adicionar o produto de ID "${productId}" ao carrinho de ID "${cartId}". Erro: ${response.message}`;
     }
     return {status: response.status, message: message};
   }
@@ -64,88 +101,6 @@ export class CartManager {
     return {status: status, message: message};
   }
 
-  async deleteCart(id){
-    let message = '';
-    
-    let cartsArray = await this.getCarts();
-    let responseCart = await this.getCartById(id);
-
-    if(responseCart.status){
-      const cartId = responseCart.message.id;
-
-      let remainingCarts = cartsArray.filter((p) => p.id !== id);
-      remainingCarts = JSON.stringify(remainingCarts);
-      
-      const responseDB = await this.#db.write(remainingCarts);
-      if(responseDB.status){
-        message = `O carrinho com ID "${cartId}" foi removido com sucesso!`;
-      }else{
-        message = `Erro ao remover o carrinho de ID "${cartId}". Erro: ${responseDB.message}`;
-      }
-
-      return {status: responseDB.status, message: message};
-    }
-  }
-
-  async updateCart(id, updatedCart){
-    let message = '';
-    
-    let cartsArray = await this.getCarts();
-    const indexToUpdate = cartsArray.findIndex((cart) => cart.id === id);
-    if(indexToUpdate === -1){
-      message = `Carrinho com Id "${id}" não encontrado.`;
-      return {status: false, message: message};
-    }
-    
-    cartsArray[indexToUpdate].produto = updatedCart.produto;
-    cartsArray[indexToUpdate].quantidade = updatedCart.quantidade;
-
-    cartsArray = JSON.stringify(cartsArray);
-    const response = await this.#db.write(cartsArray);
-
-    if(response.status){
-      message = `Carrinho com ID "${updatedCart.id}" atualizado com sucesso!`;
-    }else{
-      message = `Erro ao atualizar o carrinho de ID "${updatedCart.id}". Erro: ${response.message}`;
-    }
-    
-    return {status: response.status, message: message};
-  }
-
-  // Check if "code" is unique
-  async isCodeDuplicated(newProduct){
-    let products = await this.getCarts();
-    let codeIsDuplicated = false;
-    let message = '';
-
-    if(products){
-      codeIsDuplicated = products.find(
-        (existingProduct) => existingProduct.code === newProduct.code
-      );
-
-      if (codeIsDuplicated) {
-        message = `Erro: O código "${newProduct.code}" já foi cadastrado.`;
-      }
-    }
-
-    return {status: !!codeIsDuplicated, message: message}
-  }
-
-  // Validate that all fields are filled in
-  isRequiredFieldEmpty(newCart){
-    let status = false;
-    let message = '';
-    let emptyCart = new Cart();
-    for (const field in emptyCart) {
-      if (!newCart[field] && field !== 'thumbnails') {
-        status = true;
-        message = `Erro: O item "${field}" é obrigatório.`;
-        break;
-      }
-    }
-    return {status: status, message: message};
-  }
-
   createId(cartsList){
     let maxValue = Number.MIN_SAFE_INTEGER;
     try {
@@ -166,8 +121,17 @@ export class CartManager {
 }
 
 export class Cart {
-  constructor(produto, quantidade) {
-    this.produto = produto;
+  constructor(products) {
+    if(!Array.isArray(products)){
+      products = [products];
+    }
+    this.products = products;
+  }
+}
+
+export class CartProduct {
+  constructor(productId, quantidade) {
+    this.productId = productId;
     this.quantidade = quantidade;
   }
 }

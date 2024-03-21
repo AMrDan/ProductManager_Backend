@@ -4,7 +4,7 @@ import { ProductManager } from '../controller/ProductManager.js';
 const router = Router();
 
 // Persistency file path
-const productsFilePath = 'C:/Backend/ProductManager_Backend/src/produtos.json';
+const productsFilePath = './src/produtos.json';
 const pManager = new ProductManager(productsFilePath);
 
 router.get('/', async (req, res) => {
