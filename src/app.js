@@ -1,10 +1,16 @@
 import express from "express";
-import productsRouter from './routes/products.router.js'
 import cartsRouter from './routes/carts.router.js'
+import handlebars from 'express-handlebars'
+const _dirname = require('./utils.js');
+
+app.engine("handlebars", handlebars.engine());
+app.set('view engine', 'handlebars');
+app.set('views', _dirname+'/views');
+app.use('/', require('./routes/view.router.js'));
+app.use(express.static(_dirname+"/public"));
 
 const app = express();
 app.use(express.json());
-// app.use(urlencoded({ extended: true }));
 
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);

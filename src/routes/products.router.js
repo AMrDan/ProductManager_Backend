@@ -5,7 +5,7 @@ const router = Router();
 
 // Persistency file path
 const productsFilePath = './src/produtos.json';
-const pManager = new ProductManager(productsFilePath);
+export const pManager = new ProductManager(productsFilePath);
 
 router.get('/', async (req, res) => {
     let products = await pManager.getProducts();
